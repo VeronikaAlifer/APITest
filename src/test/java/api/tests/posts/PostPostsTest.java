@@ -33,7 +33,7 @@ public class PostPostsTest extends BaseTest {
     }
 
     @Test
-    public void createPostAsPOJO(){
+    public void createPostAsPOJO() {
         Post newPost = new Post();
         newPost.setTitle("title for test");
         newPost.setBody("new Body");
@@ -52,5 +52,28 @@ public class PostPostsTest extends BaseTest {
         Assert.assertEquals(createdPost.getId(), 101, "Invalid Id! Id should be 101.");
         Assert.assertEquals(createdPost.getUserId(), newPost.getUserId(), "Invalid userId.");
         Assert.assertEquals(createdPost.getTitle(), newPost.getTitle(), "Invalid title.");
+    }
+
+    @Test
+    public void createPostWithoutTitle() {
+        Post newPost = new Post();
+        newPost.setUserId(55);
+        newPost.setBody("My body.");
+
+        Response response = RestAssured
+                .given()
+                .contentType("application/json")
+                .body(newPost)
+                .when()
+                .post("/posts")
+                .then().statusCode(201)
+                .extract().response();
+
+        Post post = response.as(Post.class);
+
+        Assert.assertNull(post.getTitle(),  "Expected the title to be null.");
+        Assert.assertEquals(post.getId(), 101, "Expected ID to be 101.");
+        Assert.assertEquals(post.getBody(), newPost.getBody(), "The body does not match the input.");
+        Assert.assertEquals(post.getUserId(), newPost.getUserId(), "The userId does not match the input.");
     }
 }
