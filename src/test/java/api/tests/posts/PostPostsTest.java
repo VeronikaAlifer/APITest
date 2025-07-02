@@ -6,6 +6,7 @@ import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 
 public class PostPostsTest extends BaseTest {
 
@@ -71,9 +72,84 @@ public class PostPostsTest extends BaseTest {
 
         Post post = response.as(Post.class);
 
-        Assert.assertNull(post.getTitle(),  "Expected the title to be null.");
+        Assert.assertNull(post.getTitle(), "Expected the title to be null.");
         Assert.assertEquals(post.getId(), 101, "Expected ID to be 101.");
         Assert.assertEquals(post.getBody(), newPost.getBody(), "The body does not match the input.");
         Assert.assertEquals(post.getUserId(), newPost.getUserId(), "The userId does not match the input.");
+    }
+
+    @Test(description = "✅ TC04 — Создание нового поста с валидными данными.")
+    public void createPostWithValidData() {
+        Post post = new Post();
+        post.setBody("Example body.");
+        post.setUserId(28);
+        post.setTitle("Example title");
+
+        Response response = RestAssured
+                .given()
+                .contentType("application/json")
+                .body(post)
+                .when()
+                .post("/posts")
+                .then().statusCode(201)
+                .extract().response();
+
+        Post postResponse = response.as(Post.class);
+        SoftAssert softAssert = new SoftAssert();
+
+        softAssert.assertEquals(postResponse.getId(), 101, "Invalid Id! Id should be 101.");
+        softAssert.assertEquals(postResponse.getUserId(), post.getUserId(), "Invalid userId! UserId should be: " + post.getUserId());
+        softAssert.assertEquals(postResponse.getTitle(), post.getTitle(), "Invalid title! Title should be: " + post.getTitle());
+        softAssert.assertEquals(postResponse.getBody(), post.getBody(), "Invalid body! Body should be: " + post.getBody());
+        softAssert.assertAll();
+    }
+
+    @Test(description = "TC10 — Отправка POST-запроса с невалидным JSON")
+    public void testPostInvalidJson() {
+        String invalidJSON = """
+                    {
+                      title: "Auto test post",
+                      "body": "original content",
+                      "userId": 88
+                    }
+                """;
+
+        Response postResponse = RestAssured
+                .given()
+                .contentType("application/json")
+                .body(invalidJSON)
+                .when()
+                .post("/posts")
+                .then().statusCode(500)
+                .extract().response();
+        String body = postResponse.getBody().asString();
+        Assert.assertTrue(body.contains("SyntaxError: Unexpected token t in JSON"));
+    }
+
+    @Test
+    public void testReturnJsonContentTypeHeader() {
+        String expectedContentType = "application/json; charset=utf-8";
+        Post post = new Post();
+        post.setUserId(890);
+        post.setBody("original content");
+        post.setTitle("title for test");
+
+        Response response = RestAssured
+                .given()
+                .contentType(expectedContentType)
+                .body(post)
+                .when()
+                .post("/posts")
+                .then().statusCode(201)
+                .extract().response();
+
+        String actualContentType = response.contentType();
+        Post postResponse = response.as(Post.class);
+
+        Assert.assertEquals(actualContentType, expectedContentType);
+        Assert.assertEquals(postResponse.getId(), 101, "Invalid Id! Id should be 101.");
+        Assert.assertEquals(postResponse.getUserId(), post.getUserId(), "Invalid userId! UserId should be: " + post.getUserId());
+        Assert.assertEquals(postResponse.getTitle(), post.getTitle(), "Invalid title! Title should be: " + post.getTitle());
+        Assert.assertEquals(postResponse.getBody(), post.getBody(), "Invalid body! Body should be: " + post.getBody());
     }
 }
