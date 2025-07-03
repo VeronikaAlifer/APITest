@@ -1,4 +1,4 @@
-package api.models;
+package api_posts.models;
 
 public class Post {
     private int id;

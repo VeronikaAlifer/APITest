@@ -1,6 +1,6 @@
-package api.tests.posts;
+package api_posts.tests.posts;
 
-import api.config.BaseTest;
+import api_posts.config.BaseTest;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.testng.Assert;
@@ -40,4 +40,6 @@ public class DeletePostsTest extends BaseTest {
         String responseBody = response.getBody().asString();
         Assert.assertEquals(responseBody.trim(), "{}", "Response body should be an empty JSON object");
     }
+
+
 }

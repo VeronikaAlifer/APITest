@@ -1,8 +1,7 @@
-package api.tests.posts;
+package api_posts.tests.posts;
 
-import api.config.BaseTest;
-import api.models.Post;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import api_posts.config.BaseTest;
+import api_posts.models.Post;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.testng.Assert;
